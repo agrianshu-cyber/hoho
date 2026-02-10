@@ -6,7 +6,7 @@
     <title>For Dravya ❤️</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Quicksand:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     
     <style>
         /* --- CSS VARIABLES --- */
@@ -26,6 +26,8 @@
             overflow-y: auto;
             margin: 0;
             padding: 0;
+            /* Prevent pull-to-refresh on mobile which ruins the vibe */
+            overscroll-behavior: none;
         }
 
         .main-container {
@@ -136,7 +138,7 @@
             transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s;
             z-index: 15;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            padding: 20px;
+            padding: 15px; 
             opacity: 0;
             display: flex;
             flex-direction: column;
@@ -159,28 +161,42 @@
         }
 
         .envelope-wrapper.open .letter {
-            transform: translateY(-240px) scale(1.1); 
+            transform: translateY(-280px) scale(1.1); 
             z-index: 50; 
             opacity: 1;
-            height: auto; 
-            min-height: 400px; 
+            height: 480px; 
         }
 
         /* --- MOBILE ADJUSTMENTS --- */
         @media (max-width: 480px) {
             .envelope-wrapper {
-                margin-top: 100px;
+                margin-top: 150px; 
             }
 
             .envelope-wrapper.open .letter {
-                transform: translateY(-180px) scale(1.05);
-                min-height: 450px; 
+                transform: translateY(-220px) scale(1.05);
+                height: 450px; 
             }
             
             h1 {
                 font-size: 2.5rem !important;
                 margin-bottom: 2rem !important;
             }
+        }
+
+        /* --- SCROLLBAR STYLING --- */
+        #letterBody::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #letterBody::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        #letterBody::-webkit-scrollbar-thumb {
+            background: #ffb7c5; 
+            border-radius: 10px;
         }
 
         /* --- SEAL --- */
@@ -224,6 +240,9 @@
             opacity: 0;
             transform: translateY(20px);
             transition: all 1s ease 0.5s;
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
         }
         
         .envelope-wrapper.open .hidden-content {
@@ -231,22 +250,37 @@
             transform: translateY(0);
         }
 
-        .btn-group {
-            position: relative;
+        /* BUTTON WRAPPER */
+        .bottom-reveal-wrapper {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
             width: 100%;
-            margin-top: auto;
-            padding-top: 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+
+        .bottom-reveal-wrapper.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .btn-group {
+            width: 100%;
+            padding-top: 10px;
+            display: flex;
+            justify-content: center; /* Ensures centering */
+            align-items: center;
             gap: 15px;
-            min-height: 60px;
-            flex-wrap: wrap; /* Allows buttons to stack if needed */
+            flex-wrap: wrap; 
+            position: relative; /* Context for button movements */
         }
 
         #noBtn {
-            position: absolute;
-            right: 10px;
-            transition: all 0.2s ease;
+            transition: transform 0.1s ease; /* Faster transition for hop */
+            z-index: 10;
         }
         
         #yesBtn { z-index: 100; }
@@ -299,33 +333,25 @@
             background: rgba(255,255,255,0.2);
         }
 
-        /* Special Video Button (Hidden Initially) */
-        #revealVideoBtn {
-            display: none; /* Hidden until YES is clicked */
-            background: linear-gradient(45deg, #ff7eb3, #ff758c);
+        /* Buttons hidden initially */
+        #revealVideoBtn, #resetBtn {
+            display: none; 
             color: white;
-            animation: pulse-btn 1.5s infinite;
+            animation: fadeIn 0.5s;
+        }
+        
+        #revealVideoBtn {
+            background: linear-gradient(45deg, #ff7eb3, #ff758c);
         }
 
-        @keyframes pulse-btn {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 126, 179, 0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 126, 179, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 126, 179, 0); }
+        #resetBtn {
+            background: #a0aec0; /* Cool gray */
+            font-size: 0.9rem;
         }
 
-        .music-player {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            padding: 10px;
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 100;
-            cursor: pointer;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
     </style>
@@ -334,21 +360,9 @@
 
     <div id="hearts-bg" class="fixed inset-0 w-full h-full overflow-hidden pointer-events-none"></div>
 
-    <!-- Music Player -->
-    <div class="music-player group" onclick="toggleMusic()">
-        <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center text-pink-500 animate-spin-slow">
-            🎵
-        </div>
-        <span class="font-body text-sm text-gray-600 pr-2 hidden group-hover:block transition-all">Play Music</span>
-        <audio id="bgMusic" loop>
-            <source src="https://assets.mixkit.co/music/preview/mixkit-love-in-the-air-122.mp3" type="audio/mp3">
-        </audio>
-    </div>
-
     <!-- Video Modal (Hidden) -->
     <div id="videoModal" class="video-modal">
         <div class="video-container">
-            <!-- VIDEO SOURCE UPDATED TO 'cats.mp4' -->
             <video id="surpriseVideo" controls class="w-full h-auto">
                 <source src="cats.mp4" type="video/mp4">
                 Your browser does not support the video tag.
@@ -360,7 +374,7 @@
     <div class="main-container">
         
         <h1 class="font-fancy text-5xl md:text-6xl text-pink-600 mb-8 drop-shadow-sm text-center px-4 pt-10 relative z-1">
-            A Letter For You
+            Letter for Dravya
         </h1>
 
         <!-- Envelope -->
@@ -378,17 +392,17 @@
 
                 <!-- The Letter -->
                 <div class="letter text-center">
-                    <div class="w-full h-full hidden-content flex flex-col items-center">
+                    <div class="hidden-content w-full h-full relative">
                         
-                        <div class="w-full text-center border-b-2 border-pink-100 pb-2 mb-3">
-                            <span class="font-fancy text-3xl text-pink-500">My Dearest Dravya,</span>
+                        <div class="w-full text-center border-b-2 border-pink-100 pb-2 mb-3 flex-shrink-0">
+                            <span class="font-fancy text-3xl text-pink-500">My pretty Dravya,</span>
                         </div>
 
                         <!-- SCROLLING BODY CONTENT -->
-                        <div class="font-body text-gray-600 text-sm md:text-base leading-relaxed px-1 overflow-y-auto" style="max-height: 250px;">
+                        <div id="letterBody" class="font-body text-gray-600 text-sm md:text-base leading-relaxed px-2 overflow-y-auto flex-grow w-full text-left">
                             
                             <!-- PHOTO -->
-                            <div class="mb-4 relative transform -rotate-2 hover:rotate-0 transition-transform duration-300">
+                            <div class="mb-4 relative transform -rotate-2 hover:rotate-0 transition-transform duration-300 text-center">
                                 <img src="us.jpg" 
                                      alt="Us" 
                                      class="rounded-lg shadow-md border-4 border-white w-3/4 mx-auto object-cover"
@@ -396,36 +410,74 @@
                             </div>
 
                             <p class="mb-3">
-                                Every moment with you feels like a beautiful dream I never want to wake up from. You make my world brighter just by being in it.
+                                I still remember… all the time we’ve spent together. All the small little details that somehow became big for me.
                             </p>
+                            
                             <p class="mb-3">
-                                I don't need a special day to tell you how much I love you, but today gives me a reason to ask...
+                                From the fact that we literally met on a dating app lol to that one time you sent badi aankh choti aankh and how I couldn’t stop smiling uske baad..
                             </p>
-                            <p class="font-bold text-pink-500 text-lg mt-2">
+                            
+                            <p class="mb-3">
+                                All the pretty snaps you sent me... you don’t even try, and still you look so pretty and omg tumhari smile.. plus tumahri wo pyariii awaaj damm dravya. You have already taken over all of my attention even the smallest message from you can make my heart beat faster without warning.
+                            </p>
+                            
+                            <p class="mb-3">
+                                Honestly, you’re genuinely the perfect person for me, Dravya. Who wants me to call her malkin lol meri malkin dravya ? Kesi ho :)
+                            </p>
+
+                            <p class="mb-3">
+                                You are the best thing that has happened to me, and I don’t ever want to lose you dravya.. It’s Valentine’s today and I’m making this lol I just hope you will like it.
+                            </p>
+
+                            <p class="mb-2">
+                                Oh haa there is something I wanna ask too...
+                            </p>
+                            
+                            <!-- CENTERED QUESTION -->
+                            <p class="font-bold text-pink-500 text-lg md:text-2xl mt-8 mb-4 text-center w-full whitespace-nowrap px-1">
                                 Will you be my Valentine?
                             </p>
-                        </div>
+                            
+                            <!-- HIDDEN WRAPPER FOR BUTTONS & FOOTER -->
+                            <div class="bottom-reveal-wrapper">
+                                <div class="btn-group">
+                                    <!-- YES BUTTON -->
+                                    <button id="yesBtn" onclick="acceptLove()" 
+                                        class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition hover:scale-110 z-20 text-sm md:text-base">
+                                        YES! ❤️
+                                    </button>
+                                    
+                                    <!-- NO BUTTON (Run Away Logic) -->
+                                    <!-- Added 'ontouchstart' for immediate reaction on mobile -->
+                                    <!-- Added 'type="button"' to prevent any default submisison behavior -->
+                                    <button id="noBtn" type="button" 
+                                            ontouchstart="runAway(event, this)" 
+                                            onmouseover="runAway(event, this)" 
+                                            onclick="runAway(event, this)"
+                                        class="bg-gray-200 text-gray-500 font-bold py-2 px-6 rounded-full shadow-md text-sm md:text-base z-10">
+                                        No
+                                    </button>
+                                    
+                                    <!-- VIDEO BUTTON (Appears after YES) -->
+                                    <button id="revealVideoBtn" onclick="openVideo()"
+                                        class="font-bold py-2 px-6 rounded-full shadow-lg z-30 text-sm md:text-base mt-2 text-white">
+                                        🎬 Watch Surprise
+                                    </button>
 
-                        <div class="btn-group">
-                            <button id="yesBtn" onclick="acceptLove()" 
-                                class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition hover:scale-110 z-20 text-sm md:text-base">
-                                YES! ❤️
-                            </button>
+                                    <!-- CLOSE BUTTON (Appears after VIDEO OPEN) -->
+                                    <button id="resetBtn" onclick="closeEnvelope()"
+                                        class="font-bold py-2 px-4 rounded-full shadow-lg z-30 text-white mt-2 hover:bg-gray-500">
+                                        Close Letter 📩
+                                    </button>
+                                </div>
+                                
+                                <div class="text-xs text-gray-400 mt-6 font-body text-center">
+                                    Forever yours, Anshu
+                                </div>
+                            </div>
                             
-                            <button id="noBtn" onmouseover="runAway(this)" onclick="runAway(this)"
-                                class="bg-gray-200 text-gray-500 font-bold py-2 px-6 rounded-full shadow-md text-xs md:text-sm z-10">
-                                No
-                            </button>
-                            
-                            <!-- NEW VIDEO BUTTON (Hidden initially) -->
-                            <button id="revealVideoBtn" onclick="openVideo()"
-                                class="font-bold py-2 px-6 rounded-full shadow-lg z-30 text-sm md:text-base mt-2">
-                                🎬 Watch Surprise
-                            </button>
-                        </div>
-                        
-                        <div class="text-xs text-gray-400 mt-3 font-body">
-                            Forever yours, Me
+                            <!-- Spacer for easy scrolling -->
+                            <div class="h-10"></div>
                         </div>
 
                     </div>
@@ -439,29 +491,52 @@
     <script>
         const envelope = document.getElementById('envelope');
         const hint = document.getElementById('hint');
-        const audio = document.getElementById('bgMusic');
         const videoModal = document.getElementById('videoModal');
         const surpriseVideo = document.getElementById('surpriseVideo');
+        const letterBody = document.getElementById('letterBody');
+        const revealWrapper = document.querySelector('.bottom-reveal-wrapper');
         let isOpen = false;
 
         envelope.addEventListener('click', (e) => {
-            // Don't close envelope if clicking buttons or video
             if (e.target.closest('button') || e.target.closest('.video-modal')) return;
             
             if (!isOpen) {
                 envelope.classList.add('open');
                 hint.style.opacity = '0';
                 isOpen = true;
+                
+                // Check if content fits without scrolling
+                setTimeout(() => {
+                    if (letterBody.scrollHeight <= letterBody.clientHeight + 20) {
+                        revealWrapper.classList.add('visible');
+                    }
+                }, 1000);
             }
         });
 
-        function runAway(btn) {
-            const maxX = 80; 
-            const maxY = 80;
-            const newX = (Math.random() - 0.5) * maxX * 2; 
-            const newY = (Math.random() - 0.5) * maxY * 2;
+        // SCROLL LISTENER
+        letterBody.addEventListener('scroll', () => {
+            // Reveal buttons near bottom
+            if (letterBody.scrollTop + letterBody.clientHeight >= letterBody.scrollHeight - 50) {
+                revealWrapper.classList.add('visible');
+            }
+        });
+
+        // FIXED RUNAWAY FUNCTION
+        function runAway(e, btn) {
+            // STOP propagation so it doesn't trigger "Yes" or anything else
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Constrain movement to within +/- 60px so it stays visible and "hops"
+            // Using relative translation logic
+            const range = 60; 
+            const newX = (Math.random() - 0.5) * range * 2; 
+            const newY = (Math.random() - 0.5) * range * 2;
+            
             btn.style.transform = `translate(${newX}px, ${newY}px)`;
-            const texts = ["Are you sure?", "Think again!", "Miss click?", "Really?", "Try Yes!"];
+            
+            const texts = ["No dravya don't press it", "Press yes!", "Try again!", "Don't press!", "Look at Yes!"];
             btn.innerText = texts[Math.floor(Math.random() * texts.length)];
         }
 
@@ -469,14 +544,13 @@
             const duration = 3000;
             const end = Date.now() + duration;
 
-            // Change UI
-            document.getElementById('yesBtn').style.display = 'none'; // Hide YES button
-            document.getElementById('noBtn').style.display = 'none';  // Hide NO button
+            // Hide YES/NO
+            document.getElementById('yesBtn').style.display = 'none'; 
+            document.getElementById('noBtn').style.display = 'none';  
             
-            // Show the Video Button
-            const videoBtn = document.getElementById('revealVideoBtn');
-            videoBtn.style.display = 'block';
-
+            // Show ONLY Video Button
+            document.getElementById('revealVideoBtn').style.display = 'inline-block';
+            
             (function frame() {
                 confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff7eb3', '#ff758c', '#ffffff'] });
                 confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff7eb3', '#ff758c', '#ffffff'] });
@@ -488,22 +562,38 @@
             }, 500);
         }
 
+        function closeEnvelope() {
+            envelope.classList.remove('open');
+            hint.style.opacity = '1';
+            isOpen = false;
+            
+            revealWrapper.classList.remove('visible');
+
+            setTimeout(() => {
+                document.getElementById('yesBtn').style.display = 'inline-block';
+                document.getElementById('noBtn').style.display = 'inline-block';
+                // Reset NO button
+                document.getElementById('noBtn').style.transform = 'translate(0,0)';
+                document.getElementById('noBtn').innerText = 'No';
+                
+                document.getElementById('revealVideoBtn').style.display = 'none';
+                document.getElementById('resetBtn').style.display = 'none';
+                
+                letterBody.scrollTop = 0;
+            }, 600);
+        }
+
         function openVideo() {
             videoModal.classList.add('show');
-            // Pause background music so video audio can be heard
-            audio.pause();
             surpriseVideo.play();
+            
+            // SHOW CLOSE BUTTON NOW (Only after video is requested)
+            document.getElementById('resetBtn').style.display = 'inline-block';
         }
 
         function closeVideo() {
             videoModal.classList.remove('show');
             surpriseVideo.pause();
-            // Optional: Resume background music
-            // audio.play();
-        }
-
-        function toggleMusic() {
-            if (audio.paused) { audio.play(); } else { audio.pause(); }
         }
 
         const heartsContainer = document.getElementById('hearts-bg');
