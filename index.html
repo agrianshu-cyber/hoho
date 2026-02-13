@@ -26,7 +26,6 @@
             overflow-y: auto;
             margin: 0;
             padding: 0;
-            /* Prevent pull-to-refresh on mobile which ruins the vibe */
             overscroll-behavior: none;
         }
 
@@ -250,21 +249,13 @@
             transform: translateY(0);
         }
 
-        /* BUTTON WRAPPER */
+        /* BUTTON WRAPPER - Always Visible Layout */
         .bottom-reveal-wrapper {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.8s ease;
             width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding-bottom: 20px;
-        }
-
-        .bottom-reveal-wrapper.visible {
-            opacity: 1;
-            pointer-events: auto;
         }
 
         .btn-group {
@@ -438,7 +429,7 @@
                                 Will you be my Valentine?
                             </p>
                             
-                            <!-- HIDDEN WRAPPER FOR BUTTONS & FOOTER -->
+                            <!-- BUTTONS & FOOTER (Always Visible Now) -->
                             <div class="bottom-reveal-wrapper">
                                 <div class="btn-group">
                                     <!-- YES BUTTON -->
@@ -494,7 +485,6 @@
         const videoModal = document.getElementById('videoModal');
         const surpriseVideo = document.getElementById('surpriseVideo');
         const letterBody = document.getElementById('letterBody');
-        const revealWrapper = document.querySelector('.bottom-reveal-wrapper');
         let isOpen = false;
 
         envelope.addEventListener('click', (e) => {
@@ -504,21 +494,6 @@
                 envelope.classList.add('open');
                 hint.style.opacity = '0';
                 isOpen = true;
-                
-                // Check if content fits without scrolling
-                setTimeout(() => {
-                    if (letterBody.scrollHeight <= letterBody.clientHeight + 20) {
-                        revealWrapper.classList.add('visible');
-                    }
-                }, 1000);
-            }
-        });
-
-        // SCROLL LISTENER
-        letterBody.addEventListener('scroll', () => {
-            // Reveal buttons near bottom
-            if (letterBody.scrollTop + letterBody.clientHeight >= letterBody.scrollHeight - 50) {
-                revealWrapper.classList.add('visible');
             }
         });
 
@@ -566,8 +541,6 @@
             envelope.classList.remove('open');
             hint.style.opacity = '1';
             isOpen = false;
-            
-            revealWrapper.classList.remove('visible');
 
             setTimeout(() => {
                 document.getElementById('yesBtn').style.display = 'inline-block';
